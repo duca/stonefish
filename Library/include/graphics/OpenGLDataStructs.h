@@ -65,7 +65,7 @@
 #define TEX_MAT_ALBEDO          ((GLint)15)
 #define TEX_MAT_NORMAL          ((GLint)16)
 #define TEX_MAT_TEMPERATURE     ((GLint)17)
-//#define TEX_POINT_SHADOW        ((GLint)X) 
+//#define TEX_POINT_SHADOW        ((GLint)X)
 //#define TEX_POINT_DEPTH         ((GLint)X)
 
 //Standard UBO bindings
@@ -122,18 +122,12 @@ namespace sf
         glm::vec3 pos;     //Vertex attrib 0
         glm::vec3 normal;  //Vertex attrib 1
         
-        Vertex()
-        {
-            pos = glm::vec3(0.f);
-            normal = glm::vec3(0.f);
-        }
+        Vertex() : pos(0.f), normal(0.f)
+        {}
 
         friend bool operator==(const Vertex& lhs, const Vertex& rhs)
         {
-            if(lhs.pos == rhs.pos 
-                && lhs.normal == rhs.normal)
-                return true;
-            return false;
+            return lhs.pos == rhs.pos && lhs.normal == rhs.normal;
         };
     };
 
@@ -143,20 +137,34 @@ namespace sf
         glm::vec2 uv;        //Vertex attrib 2
         glm::vec3 tangent;   //Vertex attrib 3
         
-        TexturableVertex()
-        {
-            uv = glm::vec3(0.f);
-            tangent = glm::vec3(0.f);
-        }
+        TexturableVertex() : Vertex(), uv(0.f), tangent(0.f)
+        {}
         
         friend bool operator==(const TexturableVertex& lhs, const TexturableVertex& rhs)
         {
-            if(lhs.pos == rhs.pos 
-               && lhs.normal == rhs.normal 
-               && lhs.uv == rhs.uv)
-               return true;
-            return false;
+            return lhs.pos == rhs.pos && lhs.normal == rhs.normal
+                    && lhs.uv == rhs.uv && lhs.tangent == rhs.tangent;
         };
+    };
+
+    // Hash function for Vertex
+    struct VertexHash {
+        std::size_t operator()(const Vertex& v) const {
+            std::size_t posHash = std::hash<float>()(v.pos.x) ^ (std::hash<float>()(v.pos.y) << 1) ^ (std::hash<float>()(v.pos.z) << 2);
+            std::size_t normalHash = std::hash<float>()(v.normal.x) ^ (std::hash<float>()(v.normal.y) << 1) ^ (std::hash<float>()(v.normal.z) << 2);
+            return posHash ^ (normalHash << 1);
+        }
+    };
+
+    // Hash function for TexturableVertex
+    struct TexturableVertexHash {
+        std::size_t operator()(const TexturableVertex& v) const {
+            std::size_t posHash = std::hash<float>()(v.pos.x) ^ (std::hash<float>()(v.pos.y) << 1) ^ (std::hash<float>()(v.pos.z) << 2);
+            std::size_t normalHash = std::hash<float>()(v.normal.x) ^ (std::hash<float>()(v.normal.y) << 1) ^ (std::hash<float>()(v.normal.z) << 2);
+            std::size_t uvHash = std::hash<float>()(v.uv.x) ^ (std::hash<float>()(v.uv.y) << 1);
+            std::size_t tangentHash = std::hash<float>()(v.tangent.x) ^ (std::hash<float>()(v.tangent.y) << 1) ^ (std::hash<float>()(v.tangent.z) << 2);
+            return posHash ^ (normalHash << 1) ^ (uvHash << 2) ^ (tangentHash << 3);
+        }
     };
 
     //! A structure containing single face data.
@@ -166,9 +174,8 @@ namespace sf
         
         friend bool operator==(const Face& lhs, const Face& rhs)
         {
-            if(lhs.vertexID[0] == rhs.vertexID[0] && lhs.vertexID[1] == rhs.vertexID[1] && lhs.vertexID[2] == rhs.vertexID[2])
-                return true;
-            return false;
+            return lhs.vertexID[0] == rhs.vertexID[0] && lhs.vertexID[1] == rhs.vertexID[1]
+                    && lhs.vertexID[2] == rhs.vertexID[2];
         };
     };
     
@@ -320,7 +327,7 @@ namespace sf
     {
         glm::vec4 posCoord;    //Vertex attrib 0
         glm::vec3 localTangent;  //Vertex attrib 1
-        
+
         CableNode()
         {
             posCoord = glm::vec4(0.f);
@@ -329,7 +336,7 @@ namespace sf
 
         friend bool operator==(const CableNode& lhs, const CableNode& rhs)
         {
-            if(lhs.posCoord == rhs.posCoord 
+            if(lhs.posCoord == rhs.posCoord
                 && lhs.localTangent == rhs.localTangent)
                 return true;
             return false;
@@ -353,7 +360,7 @@ namespace sf
         GLuint vboVertex;
         GLsizei nodeCount;
     };
-    
+
     //! An enum representing the rendering mode.
     enum class DrawingMode {RAW, SHADOW, FLAT, FULL, UNDERWATER, TEMPERATURE};
     
@@ -532,7 +539,7 @@ namespace sf
         glm::vec3 avel;
         std::variant< std::shared_ptr<std::vector<glm::vec3>>,
                       std::shared_ptr<std::vector<CableNode>> > data;
-        
+
         Renderable() 
         {
             type = RenderableType::SOLID;
@@ -555,7 +562,7 @@ namespace sf
             return std::get<std::shared_ptr<std::vector<CableNode>>>(data);
         }
 
-		static bool SortByMaterial(const Renderable& r1, const Renderable& r2) 
+		static bool SortByMaterial(const Renderable& r1, const Renderable& r2)
 		{
 			return r1.lookId < r2.lookId;
 		}
@@ -576,7 +583,7 @@ namespace sf
         RenderQuality aa;
         RenderQuality ssr;
         bool verticalSync;
-        
+
         //! A constructor.
         RenderSettings()
         {
