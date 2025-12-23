@@ -1,0 +1,69 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 19,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
+        "CMAKE_BUILD_RPATH": "${sourceDir}/install/${presetName}",
+        "CMAKE_INSTALL_RPATH_USE_LINK_PATH": "ON",
+        "EMBED_RESOURCES": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": "default",
+      "description": "Build com informações de debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "default",
+      "description": "Build otimizado para release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "profile",
+      "inherits": "default",
+      "description": "Build with profiling flags for performance analysis (gprof/perf)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-pg -O2 -g",
+        "CMAKE_C_FLAGS_RELWITHDEBINFO": "-pg -O2 -g"
+      }
+    },
+    {
+      "name": "with-tests",
+      "inherits": "default",
+      "description": "Build com informações de debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "deploy",
+      "inherits": "release",
+      "description": "Build otimizado para release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O2 -g",
+        "CMAKE_C_FLAGS_RELWITHDEBINFO": "-O2 -g",
+        "CMAKE_INSTALL_PREFIX": "/opt/ros/stonefish"
+      }
+    }
+  ]
+}
